@@ -23,38 +23,38 @@ import kotlin.math.pow
 object NetworkUtil {
     const val LOW_VALUE = 0.0
     const val HIGH_VALUE = 1.0
-    const val NUMBER_OF_INPUTS = P_CHECKERS_COUNT * BOARD_HOLE_COUNT// * 3
+    const val NUMBER_OF_INPUTS = P_CHECKERS_COUNT * BOARD_HOLE_COUNT * 3
     const val NUMBER_OF_OUTPUTS = P_CHECKERS_COUNT * BOARD_HOLE_COUNT
 
-    /* 1 layer
+    /*
     *  In  | layer | MAX_GAMES |  Time |   %  |
     * -----|-------|-----------|-------|------|
-    *  360 |   1   |       200 |  1.1m |  4.4 |
-    *  360 |   2   |       200 |  1.3m |  3.4 |
-    * 1080 |   1   |       200 |  2.4m |  4.4 |
-    * 1080 |   2   |       200 |  5.2m |  2.5 |
-    *  360 |   1   |     2_000 | 12.0m |  8.8 |
-    *  360 |   2   |     2_000 |   .0m |   .  |
-    * 1080 |   1   |     2_000 |   27m |  9.0 |
-    * 1080 |   2   |     2_000 |     m |   .0 |
-    *  360 |   1   |    10_000 |   80m | 11.3 |
-    *  360 |   2   |    10_000 |     m |   .  |
-    * 1080 |   1   |    10_000 |  200m | 11.9 |
-    * 1080 |   2   |    10_000 |     m |   .  |
+    *  360 |   1   |    92_000 |  1.1m |  4.4 |
+    *  360 |   2   |    92_000 |  1.3m |  3.4 |
+    * 1080 |   1   |    92_000 |  2.4m |  4.4 |
+    * 1080 |   2   |    92_000 |  5.2m |  2.5 |
+    *  360 |   1   |   920_000 | 12.0m |  8.8 |
+    *  360 |   2   |   920_000 | 26.0m |  7.1 |
+    * 1080 |   1   |   920_000 |   27m |  8.7 |
+    * 1080 |   2   |   920_000 |   63m |  3.5 |
+    *  360 |   1   | 4_600_000 |   80m | 11.3 |
+    *  360 |   2   | 4_600_000 |     m |   .  |
+    * 1080 |   1   | 4_600_000 |  200m | 11.9 |
+    * 1080 |   2   | 4_600_000 |  416m |  6.6 |
     * */
 
     private const val STEPS_PER_EPOCH = 460   //460
-    private const val MAX_GAMES = 200       //200 = 1.1m/4.4% (1080in/3m/3%)
-//    private const val MAX_GAMES = 2_000       //2000 = 12m/8.8% (1080in/27m/10%)
-//    private const val MAX_GAMES = 10_000       //20000 = m / %
+//    private const val MAX_GAMES = 92_000       //200 = 1.1m/4.4% (1080in/3m/3%)
+//    private const val MAX_GAMES = 920_000       //2000 = 12m/8.8% (1080in/27m/10%)
+    private const val MAX_GAMES = 4_600_000       //20000 = m / %
     private const val MAX_THREAD = 6
-    private const val LAYERS_COUNT = 1
+    private const val LAYERS_COUNT = 2
 
     // AsyncNStepQLConfiguration.builder()
     val ASYNC_NSTEP_QL_CONFIGURATION: AsyncQLearningConfiguration = AsyncQLearningConfiguration.builder()
         .seed(123)
         .maxEpochStep(STEPS_PER_EPOCH)
-        .maxStep(STEPS_PER_EPOCH * MAX_GAMES)
+        .maxStep(MAX_GAMES)
         .numThreads(MAX_THREAD)
         .nStep(10)
 //        .batchSize(32)
@@ -71,7 +71,7 @@ object NetworkUtil {
     val NET_NSTEP: DQNDenseNetworkConfiguration = DQNDenseNetworkConfiguration
         .builder()
         .updater(Adam(0.0001))
-        .numHiddenNodes(NUMBER_OF_INPUTS * LAYERS_COUNT)
+        .numHiddenNodes(NUMBER_OF_INPUTS)
         .numLayers(LAYERS_COUNT)
 //        .l2(0.1)
         .learningRate(0.1) // 0.001 - 0.1

@@ -11,11 +11,9 @@ import org.nd4j.linalg.api.ndarray.INDArray
 import org.nd4j.linalg.factory.Nd4j
 
 class EncodableGame(
-    var game: GGame,
+    private var game: GGame,
     private val mapper: Mapper
 ) : Encodable {
-
-//    private var gameCache: Pair<Int, INDArray>? = null
 
     @Deprecated("Deprecated in Java")
     override fun toArray(): DoubleArray {
@@ -37,8 +35,8 @@ class EncodableGame(
 //        println("EncodableGame getData")
 //        println("${input}")
 
-//        return Nd4j.create(input.getFullBoard())
-        return Nd4j.create(input.getMoves()) //todo fix input size
+        return Nd4j.create(input.getFullBoard())
+//        return Nd4j.create(input.getMoves()) //todo fix input size
 //            .also { it ->
 //                check(it.size(0) == NUMBER_OF_INPUTS.toLong()) { it.size(0).toString() }
 //                it.data().asFloat().mapIndexed { index, fl ->
@@ -55,7 +53,7 @@ class EncodableGame(
     }
 
     val matrix: INDArray
-        get() = Nd4j.create(mapper.toInput(game).getFullBoard())
+                get() = Nd4j.create(mapper.toInput(game).getFullBoard())
 //        get() = Nd4j.create(mapper.toInput(game).getMoves())
             .also {
                 println("EncodableGame matrix :${it.size(0)}")
