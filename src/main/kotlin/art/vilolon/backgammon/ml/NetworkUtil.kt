@@ -18,8 +18,6 @@ import org.nd4j.linalg.lossfunctions.LossFunctions
 import java.io.File
 import kotlin.math.pow
 
-
-
 object NetworkUtil {
     const val LOW_VALUE = 0.0
     const val HIGH_VALUE = 1.0
@@ -27,34 +25,35 @@ object NetworkUtil {
     const val NUMBER_OF_OUTPUTS = P_CHECKERS_COUNT * BOARD_HOLE_COUNT
 
     /*
-    *  In  | layer | MAX_GAMES |  Time |   %  |
+    *  In  | layer | MAX_STEPS |  Time |   %  |
     * -----|-------|-----------|-------|------|
-    *  360 |   1   |    92_000 |  1.1m |  4.4 |
-    *  360 |   2   |    92_000 |  1.3m |  3.4 |
-    * 1080 |   1   |    92_000 |  2.4m |  4.4 |
-    * 1080 |   2   |    92_000 |  5.2m |  2.5 |
-    *  360 |   1   |   920_000 | 12.0m |  8.8 |
-    *  360 |   2   |   920_000 | 26.0m |  7.1 |
-    * 1080 |   1   |   920_000 |   27m |  8.7 |
-    * 1080 |   2   |   920_000 |   63m |  3.5 |
-    *  360 |   1   | 4_600_000 |   80m | 11.3 |
-    *  360 |   2   | 4_600_000 |     m |   .  |
-    * 1080 |   1   | 4_600_000 |  200m | 11.9 |
-    * 1080 |   2   | 4_600_000 |  416m |  6.6 |
+    *  360 |   1   |    92_000 |   1.1 |  4.4 |
+    *  360 |   2   |    92_000 |   1.3 |  3.4 |
+    *  360 |   3   |    92_000 |   2.2 |  2.8 |
+    *  360 |   1   |   920_000 |  12.0 |  8.8 |
+    *  360 |   2   |   920_000 |  26.0 |  7.1 |
+    *  360 |   1   | 4_600_000 |    80 | 11.3 |
+    *  360 |   2   | 4_600_000 |    90 |  8.2 |
+    * 1080 |   1   |    92_000 |   2.4 |  4.0 |
+    * 1080 |   2   |    92_000 |   5.2 |  2.5 |
+    * 1080 |   1   |   920_000 |    27 |  8.7 |
+    * 1080 |   2   |   920_000 |    63 |  3.5 |
+    * 1080 |   1   | 4_600_000 |   200 | 11.9 |
+    * 1080 |   2   | 4_600_000 |   416 |  6.6 |
     * */
 
     private const val STEPS_PER_EPOCH = 460   //460
-//    private const val MAX_GAMES = 92_000       //200 = 1.1m/4.4% (1080in/3m/3%)
-//    private const val MAX_GAMES = 920_000       //2000 = 12m/8.8% (1080in/27m/10%)
-    private const val MAX_GAMES = 4_600_000       //20000 = m / %
+    private const val MAX_STEPS = 92_000       //200 = 1.1m/4.4% (1080in/3m/3%)
+//    private const val MAX_STEPS = 920_000       //2000 = 12m/8.8% (1080in/27m/10%)
+//    private const val MAX_STEPS = 4_600_000       //20000 = m / %
     private const val MAX_THREAD = 6
-    private const val LAYERS_COUNT = 2
+    private const val LAYERS_COUNT = 1
 
     // AsyncNStepQLConfiguration.builder()
     val ASYNC_NSTEP_QL_CONFIGURATION: AsyncQLearningConfiguration = AsyncQLearningConfiguration.builder()
         .seed(123)
         .maxEpochStep(STEPS_PER_EPOCH)
-        .maxStep(MAX_GAMES)
+        .maxStep(MAX_STEPS)
         .numThreads(MAX_THREAD)
         .nStep(10)
 //        .batchSize(32)
@@ -327,7 +326,7 @@ object NetworkUtil {
         return AsyncNStepQLConfiguration.builder()
             .seed(123)
             .maxEpochStep(STEPS_PER_EPOCH)
-            .maxStep(STEPS_PER_EPOCH * MAX_GAMES)
+            .maxStep(STEPS_PER_EPOCH * MAX_STEPS)
             .numThread(4)
             .nstep(10)
             .updateStart(0)

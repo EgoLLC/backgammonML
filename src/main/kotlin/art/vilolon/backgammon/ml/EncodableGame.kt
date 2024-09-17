@@ -53,7 +53,7 @@ class EncodableGame(
     }
 
     val matrix: INDArray
-                get() = Nd4j.create(mapper.toInput(game).getFullBoard())
+        get() = Nd4j.create(mapper.toInput(game).getFullBoard())
 //        get() = Nd4j.create(mapper.toInput(game).getMoves())
             .also {
                 println("EncodableGame matrix :${it.size(0)}")

@@ -15,13 +15,8 @@ class GameObservationSpace : ObservationSpace<EncodableGame> {
     }
 
     override fun getShape(): IntArray {
-//        return IntArray(P_CHECKERS_COUNT) { BOARD_HOLE_COUNT }
-//        return IntArray(NUMBER_OF_INPUTS) //{ 1 }
-//        intArrayOf(CartpoleNative.OBSERVATION_NUM_FEATURES)
+//        return IntArray(1) { NUMBER_OF_INPUTS }
         return intArrayOf(NUMBER_OF_INPUTS)
-
-//        return intArrayOf(P_CHECKERS_COUNT * BOARD_HOLE_COUNT)
-
     }
 
     override fun getLow(): INDArray {
