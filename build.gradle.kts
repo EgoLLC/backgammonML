@@ -26,10 +26,14 @@ dependencies {
     implementation("org.nd4j:nd4j-native:1.0.0-M2.1:macosx-x86_64")
     implementation("org.nd4j:nd4j-native-platform:1.0.0-M2.1")
 
-//    implementation("org.nd4j:nd4j-cuda-11.6:1.0.0-M2.1:linux-x86_64")
-//    implementation("org.nd4j:nd4j-cuda-11.6:1.0.0-M2.1:linux-x86_64-cudnn")
-//    implementation("org.nd4j:nd4j-cuda-11.6-platform:1.0.0-M2.1")
-//    implementation("org.nd4j:nd4j-cuda-11.6-preset:1.0.0-M2.1")
+    implementation("org.nd4j:nd4j-cuda-11.6:1.0.0-M2.1") {
+        exclude("nd4j-cuda-11.6-1.0.0-M2.1-windows-x86_64")
+    }
+    implementation("org.nd4j:nd4j-cuda-11.6:1.0.0-M2.1") {
+        exclude("nd4j-cuda-11.6-1.0.0-M2.1-windows-x86_64")
+    }
+    implementation("org.nd4j:nd4j-cuda-11.6-platform:1.0.0-M2.1")
+    implementation("org.nd4j:nd4j-cuda-11.6-preset:1.0.0-M2.1")
 //
 //    implementation("org.bytedeco:cuda-platform-redist:11.6-8.3-1.5.7:linux-x86_64-redist")
 //    implementation("org.bytedeco:javacpp:1.5.7")

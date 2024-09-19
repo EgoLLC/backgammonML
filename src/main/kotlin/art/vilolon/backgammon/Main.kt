@@ -35,6 +35,7 @@ import org.deeplearning4j.rl4j.util.DataManager
 import org.deeplearning4j.rl4j.util.DataManagerTrainingListener
 import org.deeplearning4j.rl4j.util.IDataManager
 import org.nd4j.common.primitives.AtomicDouble
+import org.nd4j.jita.conf.CudaEnvironment
 //import org.nd4j.jita.conf.CudaEnvironment
 import org.nd4j.linalg.api.ndarray.INDArray
 import java.io.IOException
@@ -169,10 +170,10 @@ public static void main(String[] args) {
 }
 
 fun initCUDA() {
-//    CudaEnvironment.getInstance().configuration
-//        .allowMultiGPU(true) // key option enabled
-//        .setMaximumDeviceCache(2L * 1024L * 1024L * 1024L) // we're allowing larger memory caches
-//        .allowCrossDeviceAccess(true) // cross-device access is used for faster model averaging over pcie
+    CudaEnvironment.getInstance().configuration
+        .allowMultiGPU(true) // key option enabled
+        .setMaximumDeviceCache(12L * 1024L * 1024L * 1024L) // we're allowing larger memory caches
+        .allowCrossDeviceAccess(true) // cross-device access is used for faster model averaging over pcie
 }
 
 fun initVisualisation(dql: AsyncNStepQLearningDiscreteDense<EncodableGame>) {
