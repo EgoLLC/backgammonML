@@ -43,8 +43,8 @@ object NetworkUtil {
     * */
 
     private const val STEPS_PER_EPOCH = 460   //460
-    private const val MAX_STEPS = 92_000       //200 = 1.1m/4.4% (1080in/3m/3%)
-//    private const val MAX_STEPS = 920_000       //2000 = 12m/8.8% (1080in/27m/10%)
+//    private const val MAX_STEPS = 92_000       //200 = 1.1m/4.4% (1080in/3m/3%)
+    private const val MAX_STEPS = 920_000       //2000 = 12m/8.8% (1080in/27m/10%)
 //    private const val MAX_STEPS = 4_600_000       //20000 = m / %
     private const val MAX_THREAD = 6
     private const val LAYERS_COUNT = 1

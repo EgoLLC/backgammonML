@@ -41,7 +41,7 @@ import org.nd4j.linalg.api.ndarray.INDArray
 import java.io.IOException
 import java.util.*
 
-fun main() {
+fun main(args : Array<String>) {
     start()
 }
 
@@ -170,10 +170,17 @@ public static void main(String[] args) {
 }
 
 fun initCUDA() {
-    CudaEnvironment.getInstance().configuration
+    val cudaEnvironment = CudaEnvironment.getInstance()
+    cudaEnvironment.configuration
         .allowMultiGPU(true) // key option enabled
-        .setMaximumDeviceCache(12L * 1024L * 1024L * 1024L) // we're allowing larger memory caches
+        .setMaximumDeviceCache(2L * 1024L * 1024L * 1024L) // we're allowing larger memory caches
         .allowCrossDeviceAccess(true) // cross-device access is used for faster model averaging over pcie
+
+    println("currentDeviceArchitecture: ${cudaEnvironment.currentDeviceArchitecture}")
+    println("availableDevices: ${cudaEnvironment.configuration.availableDevices}")
+    println("bannedDevices: ${cudaEnvironment.configuration.bannedDevices}")
+    println("numberOfGcThreads: ${cudaEnvironment.configuration.numberOfGcThreads}")
+    println("isForcedSingleGPU: ${cudaEnvironment.configuration.isForcedSingleGPU}")
 }
 
 fun initVisualisation(dql: AsyncNStepQLearningDiscreteDense<EncodableGame>) {
