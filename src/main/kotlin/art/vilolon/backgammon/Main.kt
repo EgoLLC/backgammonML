@@ -20,6 +20,7 @@ import art.vilolon.backgammon.ml.GameMDP.Companion.WRONG_MOVE_REWARD
 import art.vilolon.backgammon.ml.NetworkUtil
 import art.vilolon.backgammon.ml.NetworkUtil.ASYNC_NSTEP_QL_CONFIGURATION
 import art.vilolon.backgammon.ml.NetworkUtil.NET_NSTEP
+import art.vilolon.backgammon.ml.NetworkUtil.RAM_SIZE
 import art.vilolon.backgammon.ml.domain.BoardGym
 import art.vilolon.backgammon.ml.mappers.Mapper
 import org.datavec.api.records.reader.impl.regex.RegexSequenceRecordReader.LOG
@@ -173,7 +174,7 @@ fun initCUDA() {
     val cudaEnvironment = CudaEnvironment.getInstance()
     cudaEnvironment.configuration
         .allowMultiGPU(true) // key option enabled
-        .setMaximumDeviceCache(2L * 1024L * 1024L * 1024L) // we're allowing larger memory caches
+        .setMaximumDeviceCache(RAM_SIZE) // we're allowing larger memory caches
         .allowCrossDeviceAccess(true) // cross-device access is used for faster model averaging over pcie
 
     println("currentDeviceArchitecture: ${cudaEnvironment.currentDeviceArchitecture}")
