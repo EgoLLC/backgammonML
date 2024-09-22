@@ -33,7 +33,6 @@ class GameMDP(
     private val actionSpace = DiscreteSpace(NetworkUtil.NUMBER_OF_OUTPUTS)
     private var lastProgress: GameProgress = GameProgress(0f, 0f)
     private var bufferReward = 0.0
-    private var moveCount = 0L
     private var moveCountCut = 0
     private var startTime: Long = System.currentTimeMillis()
     private var gameCache: Pair<Int, INDArray>? = null
@@ -54,7 +53,7 @@ class GameMDP(
     override fun close() {
         val sec = (System.currentTimeMillis() - startTime) / 1000
         println(
-            "Close:${moveCount} moves " +
+            "Close: $MOVE_COUNT moves " +
                     "[${(sec / 60 / 60) % 60}:" +
                     "${(sec / 60) % 60}:" +
                     "${sec % 60}]"
@@ -134,7 +133,7 @@ class GameMDP(
             "BackgammonDl4j"
         ).also {
             bufferReward += reward
-            moveCount++
+            MOVE_COUNT++
             moveCountCut++
             if (moveCountCut == CHECK_REWARD_STEPS_COUNT) {
                 val avrReward = bufferReward / CHECK_REWARD_STEPS_COUNT
@@ -202,5 +201,6 @@ class GameMDP(
         private const val ALLOWED_MOVE_REWARD = HIGH_VALUE
         private const val P1_WIN_REWARD = 1000.0
         private const val P2_WIN_REWARD = 10.0
+        private var MOVE_COUNT: BigInteger = BigInteger.ZERO
     }
 }
