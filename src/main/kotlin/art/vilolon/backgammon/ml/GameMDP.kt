@@ -133,9 +133,9 @@ class GameMDP(
             "BackgammonDl4j"
         ).also {
             bufferReward += reward
-            MOVE_COUNT++
             moveCountCut++
             if (moveCountCut == CHECK_REWARD_STEPS_COUNT) {
+                MOVE_COUNT = MOVE_COUNT.add(BigInteger.valueOf(CHECK_REWARD_STEPS_COUNT.toLong()))
                 val avrReward = bufferReward / CHECK_REWARD_STEPS_COUNT
 //                println("Avr reward:${avrReward.toString().take(7)} m:${moveCount}")
                 if (maxReward.get() < avrReward) {
