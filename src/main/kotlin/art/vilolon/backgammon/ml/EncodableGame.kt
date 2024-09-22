@@ -18,7 +18,8 @@ class EncodableGame(
     @Deprecated("Deprecated in Java")
     override fun toArray(): DoubleArray {
 //        return mapper.toInput(game).getMoves().map { it.toDouble() }.toDoubleArray()
-        return mapper.toInput(game).getFullBoard().map { it.toDouble() }.toDoubleArray()
+        return mapper.toINDArray(game).toDoubleVector()
+//        return mapper.toInput(game).getFullBoard().map { it.toDouble() }.toDoubleArray()
             .also {
                 println("EncodableGame toArray :${it.joinToString()}")
             }
@@ -31,11 +32,12 @@ class EncodableGame(
     override fun getData(): INDArray {
 //        check(game.turnPlayer == P1)
 
-        val input = mapper.toInput(game)
+//        val input = mapper.toInput(game)
 //        println("EncodableGame getData")
 //        println("${input}")
 
-        return Nd4j.create(input.getFullBoard())
+//        return Nd4j.create(input.getFullBoard())
+        return mapper.toINDArray(game)
 //        return Nd4j.create(input.getMoves()) //todo fix input size
 //            .also { it ->
 //                check(it.size(0) == NUMBER_OF_INPUTS.toLong()) { it.size(0).toString() }
@@ -46,14 +48,17 @@ class EncodableGame(
 //                        print(" ${if (fl == 1f) "X" else "_"}")
 //                    }
 //                    if (index != 0 && (index + 1) % 360 == 0) {
-//                        println("")
+//                        repeat(24) { print(" *") }
+//                        println()
 //                    }
 //                }
+//                println("")
+//
 //            }
     }
 
     val matrix: INDArray
-        get() = Nd4j.create(mapper.toInput(game).getFullBoard())
+        get() = mapper.toINDArray(game)
 //        get() = Nd4j.create(mapper.toInput(game).getMoves())
             .also {
                 println("EncodableGame matrix :${it.size(0)}")

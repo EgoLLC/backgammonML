@@ -36,7 +36,7 @@ object NetworkUtil {
     *  360 |   2   | 4_600_000 |   90 |  8.2 |  CPU  |
     * -----|-------|-----------|------|------|-------|
     * 1080 |   1   |    92_000 |  2.2 |  0.0 | CPUe5 |
-    * 1080 |   1   |    92_000 |  2.4 |  4.0 |  CPU  |
+    * 1080 |   1   |    92_000 |  3.0 |  3.8 |  CPU  |
     * 1080 |   1   |    92_000 |  3.2 |  4.2 |  M40  |
     * 1080 |   1   |    92_000 |  4.4 |  3.8 | 750Ti |
     * -----|-------|-----------|------|------|-------|
@@ -56,8 +56,8 @@ object NetworkUtil {
     * 1080 |   2   | 4_600_000 |  416 |  6.6 |  CPU  |
     * */
     private const val STEPS_PER_EPOCH = 460   //460
-//    private const val MAX_STEPS = 92_000       //200 = 1.1m/4.4% (1080in/3m/3%)
-    private const val MAX_STEPS = 920_000       //2000 = 12m/8.8% (1080in/27m/10%)
+    private const val MAX_STEPS = 92_000       //200 = 1.1m/4.4% (1080in/3m/3%)
+//    private const val MAX_STEPS = 920_000       //2000 = 12m/8.8% (1080in/27m/10%)
 //    private const val MAX_STEPS = 4_600_000       //20000 = m / %
     const val RAM_SIZE = 2L * 1024L * 1024L * 1024L
     private const val MAX_THREAD = 6

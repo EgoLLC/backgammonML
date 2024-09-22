@@ -1,17 +1,16 @@
 package art.vilolon.backgammon.ml.mappers
 
-import art.vilolon.backgammon.game.entity.GChecker
 import art.vilolon.backgammon.game.entity.GGame
 import art.vilolon.backgammon.game.rule.BOARD_HOLE_COUNT
 import art.vilolon.backgammon.game.rule.GameRule
-import art.vilolon.backgammon.game.rule.NEW_GAME_P2AI
 import art.vilolon.backgammon.game.rule.P1
 import art.vilolon.backgammon.game.rule.P_CHECKERS_COUNT
 import art.vilolon.backgammon.game.utils.LOGGER_FACTORY
-import art.vilolon.backgammon.game.utils.Logger
+import art.vilolon.backgammon.ml.NetworkUtil.NUMBER_OF_INPUTS
 import art.vilolon.backgammon.ml.model.Input
 import art.vilolon.backgammon.ml.model.Output
-import kotlin.random.Random
+import org.nd4j.linalg.api.ndarray.INDArray
+import org.nd4j.linalg.factory.Nd4j
 
 class Mapper(
     private val gameRule: GameRule = GameRule(LOGGER_FACTORY),
@@ -63,6 +62,44 @@ class Mapper(
         )
     }
 
+    fun toINDArray(game: GGame): INDArray {
+//        check(game.turnPlayer == P1) //todo remove
+        val movesAndCheckers = gameRule.getMovesAndCheckersForPlayer(
+            player = game.player1,
+            opponent = game.player2,
+            allDices = game.dices.values,
+            turnPlayer = P1,
+        )
+        return Nd4j.create(
+            FloatArray(NUMBER_OF_INPUTS) { index ->
+
+                val boxSize = BOARD_HOLE_COUNT * P_CHECKERS_COUNT
+                val board = (index / boxSize)
+                val row = (index / BOARD_HOLE_COUNT % P_CHECKERS_COUNT) + 1
+                val column = index % BOARD_HOLE_COUNT + 1
+
+                when (val i = board * 15 + row) {
+
+                    // P2 checkers positions
+                    in 1..15 -> if (game.player1.checkers[i - 1].position == column) 1f else 0f
+
+                    // P1 checkers positions
+                    in 16..30 -> if (game.player2.checkers[i - 16].position == column) 1f else 0f
+
+                    // P1 checkers moves
+                    in 31..45 -> {
+                        val checkChecker = game.player1.checkers.find { it.id == i - 31 } ?: return@FloatArray 0f
+                        val checkerWithMove = movesAndCheckers.keys.find { it.position == checkChecker.position }
+                            ?: return@FloatArray 0f
+                        if (movesAndCheckers[checkerWithMove]?.any { it.toPosition == column } == true) 1f else 0f
+                    }
+
+                    else -> error("Wrong size:${i}")
+                }
+            }
+        )
+    }
+
     /**
      * @param result [FloatArray] is model output optimal move value, size of 360 items
      * */
@@ -84,7 +121,7 @@ class Mapper(
         val checkerId = result / BOARD_HOLE_COUNT
         val toHolePosition = result % BOARD_HOLE_COUNT + 1
 
-        return Output(checkerId, toHolePosition, 0, 0,0)
+        return Output(checkerId, toHolePosition, 0, 0, 0)
     }
 
     /**
