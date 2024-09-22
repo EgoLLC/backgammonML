@@ -16,6 +16,7 @@ import org.deeplearning4j.rl4j.mdp.MDP
 import org.deeplearning4j.rl4j.space.DiscreteSpace
 import org.deeplearning4j.rl4j.space.ObservationSpace
 import org.nd4j.common.primitives.AtomicDouble
+import org.nd4j.linalg.api.ndarray.INDArray
 import java.math.BigInteger
 
 private const val CHECK_REWARD_STEPS_COUNT = 4_500
@@ -35,6 +36,7 @@ class GameMDP(
     private var moveCount = 0L
     private var moveCountCut = 0
     private var startTime: Long = System.currentTimeMillis()
+    private var gameCache: Pair<Int, INDArray>? = null
 
     override fun getObservationSpace(): ObservationSpace<EncodableGame> {
         return GameObservationSpace()
@@ -46,7 +48,7 @@ class GameMDP(
 
     override fun reset(): EncodableGame {
 //        println("Environment reset ${lastProgress}")
-        return EncodableGame(gym.newGame(), mapper)
+        return EncodableGame(gym.newGame(), mapper, gameCache)
     }
 
     override fun close() {
@@ -126,7 +128,7 @@ class GameMDP(
 //        println("Environment reward:$reward")
 
         return StepReply(
-            EncodableGame(gym.gameState, mapper),
+            EncodableGame(gym.gameState, mapper, gameCache),
             reward,
             isDone,
             "BackgammonDl4j"

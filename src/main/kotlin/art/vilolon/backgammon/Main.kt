@@ -250,7 +250,7 @@ private fun evaluateNetwork(
     var score = 0
     repeat(99) {
         try {
-            val state = EncodableGame(gym.gameState, mapper)
+            val state = EncodableGame(gym.gameState, mapper, null)
             val output: INDArray = multiLayerNetwork.output(state.matrix, false)
             val data = output.data().asFloat()
 

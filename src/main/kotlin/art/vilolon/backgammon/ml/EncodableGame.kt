@@ -2,17 +2,16 @@ package art.vilolon.backgammon.ml
 
 import art.vilolon.backgammon.game.entity.GGame
 import art.vilolon.backgammon.game.entity.GGameState
-import art.vilolon.backgammon.game.rule.P1
 import art.vilolon.backgammon.game.rule.P2
 import art.vilolon.backgammon.ml.NetworkUtil.NUMBER_OF_INPUTS
 import art.vilolon.backgammon.ml.mappers.Mapper
 import org.deeplearning4j.rl4j.space.Encodable
 import org.nd4j.linalg.api.ndarray.INDArray
-import org.nd4j.linalg.factory.Nd4j
 
 class EncodableGame(
     private var game: GGame,
-    private val mapper: Mapper
+    private val mapper: Mapper,
+    private var gameCache: Pair<Int, INDArray>?
 ) : Encodable {
 
     @Deprecated("Deprecated in Java")
@@ -34,12 +33,16 @@ class EncodableGame(
 
 //        val input = mapper.toInput(game)
 //        println("EncodableGame getData")
-//        println("${input}")
+        if (gameCache?.first == game.hashCode()) {
+//            println("return cache")
+            return gameCache!!.second
+        }
 
 //        return Nd4j.create(input.getFullBoard())
         return mapper.toINDArray(game)
 //        return Nd4j.create(input.getMoves()) //todo fix input size
-//            .also { it ->
+            .also { it ->
+                gameCache = game.hashCode() to it
 //                check(it.size(0) == NUMBER_OF_INPUTS.toLong()) { it.size(0).toString() }
 //                it.data().asFloat().mapIndexed { index, fl ->
 //                    if (index != 0 && (index + 1) % 24 == 0) {
@@ -53,8 +56,7 @@ class EncodableGame(
 //                    }
 //                }
 //                println("")
-//
-//            }
+            }
     }
 
     val matrix: INDArray
@@ -65,7 +67,7 @@ class EncodableGame(
             }
 
     override fun dup(): Encodable {
-        return EncodableGame(game.copy(), mapper)
+        return EncodableGame(game.copy(), mapper, gameCache)
     }
 
 }
