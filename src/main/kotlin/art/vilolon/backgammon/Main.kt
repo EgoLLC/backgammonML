@@ -182,6 +182,7 @@ fun initCUDA() {
     println("bannedDevices: ${cudaEnvironment.configuration.bannedDevices}")
     println("numberOfGcThreads: ${cudaEnvironment.configuration.numberOfGcThreads}")
     println("isForcedSingleGPU: ${cudaEnvironment.configuration.isForcedSingleGPU}")
+    println("isInitialized: ${cudaEnvironment.configuration.isInitialized}")
 }
 
 fun initVisualisation(dql: AsyncNStepQLearningDiscreteDense<EncodableGame>) {
