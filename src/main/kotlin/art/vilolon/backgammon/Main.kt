@@ -18,8 +18,8 @@ import art.vilolon.backgammon.ml.EncodableGame
 import art.vilolon.backgammon.ml.GameMDP
 import art.vilolon.backgammon.ml.GameMDP.Companion.WRONG_MOVE_REWARD
 import art.vilolon.backgammon.ml.NetworkUtil
-import art.vilolon.backgammon.ml.NetworkUtil.ASYNC_NSTEP_QL_CONFIGURATION
-import art.vilolon.backgammon.ml.NetworkUtil.NET_NSTEP
+import art.vilolon.backgammon.ml.NetworkUtil.CARTPOLE_A3C
+import art.vilolon.backgammon.ml.NetworkUtil.CARTPOLE_NET_A3C
 import art.vilolon.backgammon.ml.NetworkUtil.RAM_SIZE
 import art.vilolon.backgammon.ml.domain.BoardGym
 import art.vilolon.backgammon.ml.mappers.Mapper
@@ -29,6 +29,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.optimize.listeners.PerformanceListener
 import org.deeplearning4j.rl4j.learning.IEpochTrainer
 import org.deeplearning4j.rl4j.learning.ILearning
+import org.deeplearning4j.rl4j.learning.async.a3c.discrete.A3CDiscreteDense
 import org.deeplearning4j.rl4j.learning.async.nstep.discrete.AsyncNStepQLearningDiscreteDense
 import org.deeplearning4j.rl4j.learning.listener.TrainingListener
 import org.deeplearning4j.rl4j.space.ActionSpace
@@ -69,12 +70,16 @@ fun start() {
 //        NetworkUtil.buildConfig(),
 //    )
 
-//    val mdp: MDP<Game, Int, DiscreteSpace> = SnakeGameMdp(width, height, Random(7))
+//    val dql: AsyncNStepQLearningDiscreteDense<EncodableGame> = AsyncNStepQLearningDiscreteDense(
+//        mdp,
+//        NET_NSTEP,
+//        ASYNC_NSTEP_QL_CONFIGURATION,
+//    )
 
-    val dql: AsyncNStepQLearningDiscreteDense<EncodableGame> = AsyncNStepQLearningDiscreteDense(
+    val dql: A3CDiscreteDense<EncodableGame> = A3CDiscreteDense(
         mdp,
-        NET_NSTEP,
-        ASYNC_NSTEP_QL_CONFIGURATION,
+        CARTPOLE_NET_A3C,
+        CARTPOLE_A3C
     )
 
 //    dql.addListener(DataManagerTrainingListener(DataManager()))
@@ -109,8 +114,6 @@ fun start() {
             return TrainingListener.ListenerResponse.CONTINUE
         }
     }
-
-//    val dql: A3CDiscreteDense<EncodableGame> = A3CDiscreteDense(mdp, CARTPOLE_NET_A3C, CARTPOLE_A3C)
 
 //    val dql: A3CDiscreteDense<EncodableGame> = A3CDiscreteDense(mdp, configuration, A3C)
 //    val dql: QLearningDiscreteDense<EncodableGame> = QLearningDiscreteDense(mdp, conf, DQN)
@@ -156,7 +159,7 @@ public static void main(String[] args) {
 
     // Save network
     try {
-        dql.neuralNet.save(randomNetworkName)
+        dql.neuralNet.save(randomNetworkName, randomNetworkName)
 //        dql.neuralNet.neuralNetworks[0].
         println("saved:$randomNetworkName pid:${ProcessHandle.current().pid()}")
     } catch (e: IOException) {

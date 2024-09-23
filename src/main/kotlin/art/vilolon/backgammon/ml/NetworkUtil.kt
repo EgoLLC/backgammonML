@@ -8,7 +8,9 @@ import org.deeplearning4j.nn.conf.layers.OutputLayer
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
 import org.deeplearning4j.nn.weights.WeightInit
 import org.deeplearning4j.rl4j.learning.async.nstep.discrete.AsyncNStepQLearningDiscrete.AsyncNStepQLConfiguration
+import org.deeplearning4j.rl4j.learning.configuration.A3CLearningConfiguration
 import org.deeplearning4j.rl4j.learning.configuration.AsyncQLearningConfiguration
+import org.deeplearning4j.rl4j.network.configuration.ActorCriticDenseNetworkConfiguration
 import org.deeplearning4j.rl4j.network.configuration.DQNDenseNetworkConfiguration
 import org.deeplearning4j.rl4j.network.dqn.DQNFactoryStdDense
 import org.nd4j.linalg.activations.Activation
@@ -25,39 +27,40 @@ object NetworkUtil {
     const val NUMBER_OF_OUTPUTS = P_CHECKERS_COUNT * BOARD_HOLE_COUNT
 
     /*
-    *  In  | layer | MAX_STEPS | Time |   %  | CORE  |
-    * -----|-------|-----------|------|------|-------|
-    *  360 |   1   |    92_000 |  1.1 |  4.4 |  CPU  |
-    *  360 |   2   |    92_000 |  1.3 |  3.4 |  CPU  |
-    *  360 |   3   |    92_000 |  2.2 |  2.8 |  CPU  |
-    *  360 |   1   |   920_000 | 12.0 |  8.8 |  CPU  |
-    *  360 |   2   |   920_000 | 26.0 |  7.1 |  CPU  |
-    *  360 |   1   | 4_600_000 |   80 | 11.3 |  CPU  |
-    *  360 |   2   | 4_600_000 |   90 |  8.2 |  CPU  |
-    * -----|-------|-----------|------|------|-------|
-    * 1080 |   1   |    92_000 |  2.2 |  0.0 | CPUe5 |
-    * 1080 |   1   |    92_000 |  3.0 |  3.8 |  CPU  |
-    * 1080 |   1   |    92_000 |  3.2 |  4.2 |  M40  |
-    * 1080 |   1   |    92_000 |  4.4 |  3.8 | 750Ti |
-    * -----|-------|-----------|------|------|-------|
-    * 1080 |   2   |    92_000 |  3.2 |  0.0 | CPUe5 |
-    * 1080 |   2   |    92_000 |  4.2 |  2.9 |  M40  |
-    * 1080 |   2   |    92_000 |  5.2 |  2.5 |  CPU  |
-    * 1080 |   2   |    92_000 |  7.0 |  2.5 | 750Ti |
-    * -----|-------|-----------|------|------|-------|
-    * 1080 |   1   |   920_000 |   28 |  8.7 |  CPU  |
-    * 1080 |   1   |   920_000 |   32 |  9.9 |  M40  |
-    * 1080 |   1   |   920_000 |   34 |  9.6 | CPUe5 |
-    * 1080 |   1   |   920_000 |   48 | 10.6 | 750Ti |
-    * -----|-------|-----------|------|------|-------|
-    * 1080 |   2   |   920_000 |   63 |  3.5 |  CPU  |
-    * -----|-------|-----------|------|------|-------|
-    * 1080 |   1   | 4_600_000 |  200 | 11.9 |  CPU  |
-    * 1080 |   1   | 4_600_000 |  145 | 12.3 |  M40  |
-    * 1080 |   2   | 4_600_000 |  416 |  6.6 |  CPU  |
+    *  In  | layer | MAX_STEPS | Time |   %  | CORE  | Arch  |
+    * -----|-------|-----------|------|------|-------|-------|
+    *  360 |   1   |    92_000 |  1.1 |  4.4 |  CPU  | NStep |
+    *  360 |   2   |    92_000 |  1.3 |  3.4 |  CPU  | NStep |
+    *  360 |   3   |    92_000 |  2.2 |  2.8 |  CPU  | NStep |
+    *  360 |   1   |   920_000 | 12.0 |  8.8 |  CPU  | NStep |
+    *  360 |   2   |   920_000 | 26.0 |  7.1 |  CPU  | NStep |
+    *  360 |   1   | 4_600_000 |   80 | 11.3 |  CPU  | NStep |
+    *  360 |   2   | 4_600_000 |   90 |  8.2 |  CPU  | NStep |
+    * -----|-------|-----------|------|------|-------|-------|
+    * 1080 |   1   |    92_000 |  2.2 |  0.0 | CPUe5 | NStep |
+    * 1080 |   1   |    92_000 |  3.0 |  3.8 |  CPU  | NStep |
+    * 1080 |   1   |    92_000 |  3.2 |  3.0 |  CPU  |  A3C  |
+    * 1080 |   1   |    92_000 |  3.2 |  4.2 |  M40  | NStep |
+    * 1080 |   1   |    92_000 |  4.4 |  3.8 | 750Ti | NStep |
+    * -----|-------|-----------|------|------|-------|-------|
+    * 1080 |   2   |    92_000 |  3.2 |  0.0 | CPUe5 | NStep |
+    * 1080 |   2   |    92_000 |  4.2 |  2.9 |  M40  | NStep |
+    * 1080 |   2   |    92_000 |  5.2 |  2.5 |  CPU  | NStep |
+    * 1080 |   2   |    92_000 |  7.0 |  2.5 | 750Ti | NStep |
+    * -----|-------|-----------|------|------|-------|-------|
+    * 1080 |   1   |   920_000 |   28 |  8.7 |  CPU  | NStep |
+    * 1080 |   1   |   920_000 |   32 |  9.9 |  M40  | NStep |
+    * 1080 |   1   |   920_000 |   34 |  9.6 | CPUe5 | NStep |
+    * 1080 |   1   |   920_000 |   48 | 10.6 | 750Ti | NStep |
+    * -----|-------|-----------|------|------|-------|-------|
+    * 1080 |   2   |   920_000 |   63 |  3.5 |  CPU  | NStep |
+    * -----|-------|-----------|------|------|-------|-------|
+    * 1080 |   1   | 4_600_000 |  200 | 11.9 |  CPU  | NStep |
+    * 1080 |   1   | 4_600_000 |  145 | 12.3 |  M40  | NStep |
+    * 1080 |   2   | 4_600_000 |  416 |  6.6 |  CPU  | NStep |
     * */
     private const val STEPS_PER_EPOCH = 460   //460
-//    private const val MAX_STEPS = 92_000       //200 = 1.1m/4.4% (1080in/3m/3%)
+//    private const val MAX_STEPS = 92_000     //200 = 1.1m/4.4% (1080in/3m/3%)
 //    private const val MAX_STEPS = 920_000       //2000 = 12m/8.8% (1080in/27m/10%)
     private const val MAX_STEPS = 4_600_000       //20000 = m / %
     const val RAM_SIZE = 2L * 1024L * 1024L * 1024L
@@ -65,46 +68,67 @@ object NetworkUtil {
     private const val LAYERS_COUNT = 1
 
     // AsyncNStepQLConfiguration.builder()
-    val ASYNC_NSTEP_QL_CONFIGURATION: AsyncQLearningConfiguration = AsyncQLearningConfiguration.builder()
+//    val ASYNC_NSTEP_QL_CONFIGURATION: AsyncQLearningConfiguration = AsyncQLearningConfiguration.builder()
+//        .seed(123)
+//        .maxEpochStep(STEPS_PER_EPOCH)
+//        .maxStep(MAX_STEPS)
+//        .numThreads(MAX_THREAD)
+//        .nStep(10)
+////        .batchSize(32)
+////        .doubleDQN(true)
+//        .updateStart(100)
+//        .rewardFactor(1.0)
+//        .gamma(0.999)
+//        .errorClamp(1.0)
+//        .epsilonNbStep(9_000)
+//        .minEpsilon(0.0)
+//        .targetDqnUpdateFreq(100)
+//        .build()
+
+    var CARTPOLE_A3C: A3CLearningConfiguration = A3CLearningConfiguration.builder()
         .seed(123)
         .maxEpochStep(STEPS_PER_EPOCH)
         .maxStep(MAX_STEPS)
         .numThreads(MAX_THREAD)
         .nStep(10)
-//        .batchSize(32)
-//        .doubleDQN(true)
-        .updateStart(100)
+        .learnerUpdateFrequency(100)
         .rewardFactor(1.0)
         .gamma(0.999)
-        .errorClamp(1.0)
-        .epsilonNbStep(9_000)
-        .minEpsilon(0.0)
-        .targetDqnUpdateFreq(100)
         .build()
 
-    val NET_NSTEP: DQNDenseNetworkConfiguration = DQNDenseNetworkConfiguration
+//    val NET_NSTEP: DQNDenseNetworkConfiguration = DQNDenseNetworkConfiguration
+//        .builder()
+//        .updater(Adam(0.0001))
+//        .numHiddenNodes((NUMBER_OF_OUTPUTS * 1).toInt())
+//        .numLayers(LAYERS_COUNT)
+////        .l2(0.1)
+//        .learningRate(0.1) // 0.001 - 0.1
+//        .build()
+
+    val CARTPOLE_NET_A3C: ActorCriticDenseNetworkConfiguration = ActorCriticDenseNetworkConfiguration
         .builder()
         .updater(Adam(0.0001))
-        .numHiddenNodes(NUMBER_OF_INPUTS)
+        .numHiddenNodes(NUMBER_OF_OUTPUTS)
         .numLayers(LAYERS_COUNT)
-//        .l2(0.1)
-        .learningRate(0.1) // 0.001 - 0.1
+//        .l2()
+//        .useLSTM()
+        .learningRate(0.1)
         .build()
 
-    fun buildDQNFactory(): DQNFactoryStdDense {
-        val build = DQNDenseNetworkConfiguration.builder()
-//            .l2(0.001)
-//            .updater(RmsProp(0.000025))
-//            .numHiddenNodes(800)
-//            .numLayers(5)
+//    fun buildDQNFactory(): DQNFactoryStdDense {
+//        val build = DQNDenseNetworkConfiguration.builder()
+////            .l2(0.001)
+////            .updater(RmsProp(0.000025))
+////            .numHiddenNodes(800)
+////            .numLayers(5)
+////            .build()
+//            .updater(Nadam(10.0.pow(-3.5)))
+//            .numHiddenNodes(200)
+//            .numLayers(6)
 //            .build()
-            .updater(Nadam(10.0.pow(-3.5)))
-            .numHiddenNodes(200)
-            .numLayers(6)
-            .build()
-
-        return DQNFactoryStdDense(build)
-    }
+//
+//        return DQNFactoryStdDense(build)
+//    }
 
     //    var TOY_ASYNC_QL = AsyncNStepQLConfiguration(
 //        123,  // Random seed
@@ -163,19 +187,6 @@ object NetworkUtil {
 ////        .l2(0.01)
 //        .build()
 
-//    var CARTPOLE_A3C: A3CLearningConfiguration = A3CLearningConfiguration.builder()
-//        .seed(123)
-//        .maxEpochStep(STEPS_PER_EPOCH)
-//        .maxStep(STEPS_PER_EPOCH * MAX_GAMES)  //Max step
-//        .numThreads(MAX_THREAD)  //Number of threads
-//        .nStep(5)
-////        .learnerUpdateFrequency()
-////        .updateStart(10)  //num step noop warmup
-//        .rewardFactor(0.1)  //reward scaling
-//        .gamma(0.99)  //gamma
-////        .errorClamp(10.0) //td-error clipping
-//        .build()
-
 //    val A3C: A3CConfiguration = A3CConfiguration
 //        .builder()
 //        .seed(123)
@@ -188,17 +199,6 @@ object NetworkUtil {
 //        .gamma(0.99)
 //        .errorClamp(1.0)
 //        .build()
-
-//    val CARTPOLE_NET_A3C: ActorCriticDenseNetworkConfiguration = ActorCriticDenseNetworkConfiguration
-//        .builder()
-//        .numLayers(1)
-//        .numHiddenNodes(360)
-//        .learningRate(0.001)
-//        .updater(Adam(0.001))
-////        .l2()
-////        .useLSTM()
-//        .build()
-
 
 //    var configuration: ActorCriticFactorySeparateStdDense.Configuration =
 //        ActorCriticFactorySeparateStdDense.Configuration
