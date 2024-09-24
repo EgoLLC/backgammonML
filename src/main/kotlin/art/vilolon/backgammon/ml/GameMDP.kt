@@ -8,6 +8,7 @@ import art.vilolon.backgammon.game.utils.Logger
 import art.vilolon.backgammon.initNewGym
 import art.vilolon.backgammon.ml.NetworkUtil.HIGH_VALUE
 import art.vilolon.backgammon.ml.NetworkUtil.LOW_VALUE
+import art.vilolon.backgammon.ml.NetworkUtil.MAX_STEPS
 import art.vilolon.backgammon.ml.domain.BoardGym
 import art.vilolon.backgammon.ml.mappers.Mapper
 import kotlinx.coroutines.runBlocking
@@ -17,7 +18,7 @@ import org.deeplearning4j.rl4j.space.DiscreteSpace
 import org.deeplearning4j.rl4j.space.ObservationSpace
 import org.nd4j.common.primitives.AtomicDouble
 import org.nd4j.linalg.api.ndarray.INDArray
-import java.math.BigInteger
+import kotlin.math.roundToInt
 
 private const val CHECK_REWARD_STEPS_COUNT = 4_500
 
@@ -53,7 +54,7 @@ class GameMDP(
     override fun close() {
         val sec = (System.currentTimeMillis() - startTime) / 1000
         println(
-            "Close: $MOVE_COUNT moves " +
+            "Close: $moveCount moves " +
                     "[${(sec / 60 / 60) % 60}:" +
                     "${(sec / 60) % 60}:" +
                     "${sec % 60}]"
@@ -135,18 +136,21 @@ class GameMDP(
             bufferReward += reward
             moveCountCut++
             if (moveCountCut == CHECK_REWARD_STEPS_COUNT) {
-                MOVE_COUNT = MOVE_COUNT.add(BigInteger.valueOf(CHECK_REWARD_STEPS_COUNT.toLong()))
+                moveCount += CHECK_REWARD_STEPS_COUNT
                 val avrReward = bufferReward / CHECK_REWARD_STEPS_COUNT
 //                println("Avr reward:${avrReward.toString().take(7)} m:${moveCount}")
                 if (maxReward.get() < avrReward) {
                     maxReward.set(avrReward)
                     val sec = (System.currentTimeMillis() - startTime) / 1_000
+                    val h = (sec / 60 / 60) % 60
+                    val m = (sec / 60) % 60
+                    val s = sec % 60
                     println(
                         "Max reward:${maxReward.get().toString().take(7)} " +
-                                "[${(sec / 60 / 60) % 60}:" +
-                                "${(sec / 60) % 60}:" +
-                                "${sec % 60}]"
-//                                + " moveCount ${moveCount}"
+                                "[$h:" +
+                                (if (m > 10) "0${m}" else "$m") +
+                                ":${(if (s < 10) "0${s}" else "$s")}]"
+                                + " [${((moveCount.toFloat() / MAX_STEPS) * 100).roundToInt()}%]"
                     )
                 }
                 moveCountCut = 0
@@ -201,6 +205,6 @@ class GameMDP(
         private const val ALLOWED_MOVE_REWARD = HIGH_VALUE
         private const val P1_WIN_REWARD = 1000.0
         private const val P2_WIN_REWARD = 10.0
-        private var MOVE_COUNT: BigInteger = BigInteger.ZERO
+        private var moveCount = 0
     }
 }

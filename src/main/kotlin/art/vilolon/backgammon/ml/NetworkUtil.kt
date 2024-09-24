@@ -62,9 +62,9 @@ object NetworkUtil {
     * 1080 |   2   | 4_600_000 |  416 |  6.6 |  CPU  | NStep |
     * */
     private const val STEPS_PER_EPOCH = 460   //460
-//    const val MAX_STEPS = 92_000     //200 = 1.1m/4.4% (1080in/3m/3%)
-    const val MAX_STEPS = 920_000       //2000 = 12m/8.8% (1080in/27m/10%)
-//    const val MAX_STEPS = 4_600_000     //20000 = m / %
+//    const val MAX_STEPS = 92_000
+    const val MAX_STEPS = 920_000
+//    const val MAX_STEPS = 4_600_000
     const val RAM_SIZE = 2L * 1024L * 1024L * 1024L
     private const val MAX_THREAD = 6
     private const val LAYERS_COUNT = 1
