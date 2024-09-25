@@ -148,7 +148,7 @@ class GameMDP(
                     println(
                         "Max reward:${maxReward.get().toString().take(7)} " +
                                 "[$h:" +
-                                (if (m > 10) "0${m}" else "$m") +
+                                (if (m < 10) "0${m}" else "$m") +
                                 ":${(if (s < 10) "0${s}" else "$s")}]"
                                 + " [${((moveCount.toFloat() / MAX_STEPS) * 100).roundToInt()}%]"
                     )
