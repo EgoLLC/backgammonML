@@ -55,9 +55,9 @@ class GameMDP(
         val sec = (System.currentTimeMillis() - startTime) / 1000
         println(
             "Close: $moveCount moves " +
-                    "[${(sec / 60 / 60) % 60}:" +
-                    "${(sec / 60) % 60}:" +
-                    "${sec % 60}]"
+                    "[${((sec / 60 / 60) % 60).toString().padStart(2, '0')}:" +
+                    "${((sec / 60) % 60).toString().padStart(2, '0')}:" +
+                    "${(sec % 60).toString().padStart(2, '0')}]"
         )
     }
 
@@ -142,14 +142,12 @@ class GameMDP(
                 if (maxReward.get() < avrReward) {
                     maxReward.set(avrReward)
                     val sec = (System.currentTimeMillis() - startTime) / 1_000
-                    val h = (sec / 60 / 60) % 60
-                    val m = (sec / 60) % 60
-                    val s = sec % 60
+                    val h = ((sec / 60 / 60) % 60).toString().padStart(2, '0')
+                    val m = ((sec / 60) % 60).toString().padStart(2, '0')
+                    val s = (sec % 60).toString().padStart(2, '0')
                     println(
                         "Max reward:${maxReward.get().toString().take(7)} " +
-                                "[$h:" +
-                                (if (m < 10) "0${m}" else "$m") +
-                                ":${(if (s < 10) "0${s}" else "$s")}]"
+                                "[$h:$m:$s]"
                                 + " [${((moveCount.toFloat() / MAX_STEPS) * 100).roundToInt()}%]"
                     )
                 }

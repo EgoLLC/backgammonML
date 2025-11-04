@@ -23,7 +23,7 @@ dependencies {
 //    implementation("org.deeplearning4j:deeplearning4j-ui:1.0.0-M2.1")
 
 //    implementation("org.nd4j:nd4j-native:1.0.0-M2.1:linux-x86_64")
-    implementation("org.nd4j:nd4j-native:1.0.0-M2.1:macosx-x86_64")
+    implementation("org.nd4j:nd4j-native:1.0.0-M2.1:macosx-arm64")
     implementation("org.nd4j:nd4j-native-platform:1.0.0-M2.1")
 
     implementation("org.nd4j:nd4j-cuda-11.6:1.0.0-M2.1") {

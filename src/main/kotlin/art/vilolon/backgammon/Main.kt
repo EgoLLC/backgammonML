@@ -38,7 +38,6 @@ import org.deeplearning4j.rl4j.util.DataManagerTrainingListener
 import org.deeplearning4j.rl4j.util.IDataManager
 import org.nd4j.common.primitives.AtomicDouble
 import org.nd4j.jita.conf.CudaEnvironment
-//import org.nd4j.jita.conf.CudaEnvironment
 import org.nd4j.linalg.api.ndarray.INDArray
 import java.io.IOException
 import java.util.*
