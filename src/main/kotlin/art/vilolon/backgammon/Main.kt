@@ -158,7 +158,7 @@ public static void main(String[] args) {
 
     // Save network
     try {
-        dql.neuralNet.save(randomNetworkName, randomNetworkName)
+//        dql.neuralNet.save(randomNetworkName, randomNetworkName)
 //        dql.neuralNet.neuralNetworks[0].
         println("saved:$randomNetworkName pid:${ProcessHandle.current().pid()}")
     } catch (e: IOException) {

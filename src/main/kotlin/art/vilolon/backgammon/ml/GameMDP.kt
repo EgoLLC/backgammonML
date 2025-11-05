@@ -108,7 +108,7 @@ class GameMDP(
         }
 
 
-        lastProgress = gym.getProgress()
+//        lastProgress = gym.getProgress()
 
 
         // Get current state
@@ -116,7 +116,7 @@ class GameMDP(
 //        encodableGame.game = gym.gameState
 
         val reward = when {
-            isDone -> 0.1
+//            isDone -> 0.1
             true == true -> rewardValue
             isP1Win != null -> P1_WIN_REWARD
             isP2Win != null -> rewardValue
@@ -174,6 +174,7 @@ class GameMDP(
 //            println("WRONG_MOVE")
             return WRONG_MOVE_REWARD
         } else {
+//            println("ALLOWED_MOVE_REWARD")
             return ALLOWED_MOVE_REWARD
         }
 
