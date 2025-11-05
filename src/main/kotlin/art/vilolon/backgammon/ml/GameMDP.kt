@@ -61,7 +61,7 @@ class GameMDP(
         )
     }
 
-    override fun step(actionIndex: Int): StepReply<EncodableGame> {
+    override fun step(actionIndex: Int): StepReply<EncodableGame> = runBlocking {
 //        println("Environment step pid:${ProcessHandle.current().pid()}")
         // Find action based on action index
         val (checkerId, toPosition) = mapper.toOutput(actionIndex)
@@ -77,35 +77,31 @@ class GameMDP(
         val rewardValue = calculateRewardForAction(checkerId, toPosition)
 
         // Move
-        runBlocking {
-            if (rewardValue == WRONG_MOVE_REWARD) {
-                val p1Move = gym.p1Move() //AI2P1 do move
+        if (rewardValue == WRONG_MOVE_REWARD) {
+            val p1Move = gym.p1Move() //AI2P1 do move
 //                p1Move?.winner?.let {
 //                        println("P1 Win $p1Move $lastProgress")
 //                }
 //                isP1Win = p1Move?.winner
 //                println("Environment p1Move:$p1Move")
-            } else {
-                val p1Move = gym.p1Move(checkerId, toPosition)
+        } else {
+            val p1Move = gym.p1Move(checkerId, toPosition)
 //                p1Move?.winner?.let {
 //                        println("P1 Win $p1Move $lastProgress")
 //                }
 //                isP1Win = p1Move?.winner //NN do move
 //                println("Environment NN p1Move:$p1Move")
-            }
         }
 
 
         if (gym.getTurnPlayer() == P2) {
-            runBlocking {
-                while (gym.getTurnPlayer() == P2 && !isDone) {
-                    val p2Move = gym.p2Move()
+            while (gym.getTurnPlayer() == P2 && !isDone) {
+                val p2Move = gym.p2Move()
 //                    p2Move?.winner?.let {
 //                            println("P2 Win $p2Move $lastProgress")
 //                    }
 //                    isP2Win = p2Move?.winner
 //                    println("Environment p2Move:$p2Move")
-                }
             }
         }
 
@@ -127,7 +123,7 @@ class GameMDP(
 
 //        println("Environment reward:$reward")
 
-        return StepReply(
+        return@runBlocking StepReply(
             EncodableGame(gym.gameState, mapper, gameCache),
             reward,
             isDone,
