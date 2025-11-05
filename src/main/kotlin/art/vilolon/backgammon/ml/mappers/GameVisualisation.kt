@@ -7,11 +7,11 @@ import art.vilolon.backgammon.game.rule.P1
 import art.vilolon.backgammon.game.rule.P2
 
 fun main() {
-    GameVisualisation().render(NEW_GAME_P2P)
+    GameVisualisation.render(NEW_GAME_P2P)
 //    GameVisualisation().render(NEW_GAME_P2AI)
 }
 
-class GameVisualisation {
+object GameVisualisation {
 
     fun render(game: GGame) {
         val p1CheckersToPos = game.player1.checkers.groupBy { it.position }

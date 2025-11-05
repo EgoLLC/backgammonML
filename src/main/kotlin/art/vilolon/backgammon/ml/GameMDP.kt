@@ -10,6 +10,7 @@ import art.vilolon.backgammon.ml.NetworkUtil.HIGH_VALUE
 import art.vilolon.backgammon.ml.NetworkUtil.LOW_VALUE
 import art.vilolon.backgammon.ml.NetworkUtil.MAX_STEPS
 import art.vilolon.backgammon.ml.domain.BoardGym
+import art.vilolon.backgammon.ml.mappers.GameVisualisation
 import art.vilolon.backgammon.ml.mappers.Mapper
 import kotlinx.coroutines.runBlocking
 import org.deeplearning4j.gym.StepReply
@@ -37,6 +38,7 @@ class GameMDP(
     private var moveCountCut = 0
     private var startTime: Long = System.currentTimeMillis()
     private var gameCache: Pair<Int, INDArray>? = null
+    private val gameVisualisation by lazy { GameVisualisation }
 
     override fun getObservationSpace(): ObservationSpace<EncodableGame> {
         return GameObservationSpace()
@@ -131,6 +133,7 @@ class GameMDP(
         ).also {
             bufferReward += reward
             moveCountCut++
+//            gameVisualisation.render(gym.gameState)
             if (moveCountCut == CHECK_REWARD_STEPS_COUNT) {
                 moveCount += CHECK_REWARD_STEPS_COUNT
                 val avrReward = bufferReward / CHECK_REWARD_STEPS_COUNT
