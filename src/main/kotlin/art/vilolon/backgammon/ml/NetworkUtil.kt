@@ -21,7 +21,7 @@ import java.io.File
 import kotlin.math.pow
 
 object NetworkUtil {
-    const val LOW_VALUE = 0.0
+    const val LOW_VALUE = -1.0
     const val HIGH_VALUE = 1.0
     const val NUMBER_OF_INPUTS = P_CHECKERS_COUNT * BOARD_HOLE_COUNT * 3
     const val NUMBER_OF_OUTPUTS = P_CHECKERS_COUNT * BOARD_HOLE_COUNT

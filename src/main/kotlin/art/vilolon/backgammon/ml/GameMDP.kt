@@ -157,12 +157,15 @@ class GameMDP(
     }
 
     private fun calculateRewardForAction(checkerId: Int, toPosition: HolePosition): Double {
+//        println("calculateRewardForAction checkerId:${checkerId} toPosition:$toPosition")
         val p1AvailableMoves = gym.getP1AvailableMoves()
-        val availableMovesForChecker = p1AvailableMoves.filter { move ->
-            move.holes.any { it.checker.id == checkerId }
+        val movesToPosition = p1AvailableMoves.filter { move ->
+            move.holes.any { it.toPosition == toPosition }
         }
-        val hasMove = availableMovesForChecker.any { checker ->
-            checker.holes.any { it.toPosition == toPosition }
+        val hasMove = movesToPosition.any { moves ->
+            moves.holes.any {
+                it.checker.position == gym.gameState.player1.checkers[checkerId].position
+            }
         }
 
 //        println("calculateRewardForAction hasMove:$hasMove \n" +
