@@ -18,7 +18,6 @@ import org.nd4j.linalg.learning.config.Adam
 import org.nd4j.linalg.learning.config.Nadam
 import org.nd4j.linalg.lossfunctions.LossFunctions
 import java.io.File
-import kotlin.math.pow
 
 object NetworkUtil {
     const val LOW_VALUE = -1.0
@@ -76,6 +75,10 @@ object NetworkUtil {
     private const val MAX_THREAD = 6
     private const val LAYERS_COUNT = 1
 
+    fun getCpuCount(): Int {
+//        return MAX_THREAD
+        return Runtime.getRuntime().availableProcessors();
+    }
     // AsyncNStepQLConfiguration.builder()
 //    val ASYNC_NSTEP_QL_CONFIGURATION: AsyncQLearningConfiguration = AsyncQLearningConfiguration.builder()
 //        .seed(123)
@@ -98,7 +101,7 @@ object NetworkUtil {
         .seed(123)
         .maxEpochStep(STEPS_PER_EPOCH)
         .maxStep(MAX_STEPS)
-        .numThreads(MAX_THREAD)
+        .numThreads(getCpuCount())
         .nStep(10)
         .learnerUpdateFrequency(100)
         .rewardFactor(1.0)

@@ -11,7 +11,6 @@ import art.vilolon.backgammon.game.entity.GGameState
 import art.vilolon.backgammon.game.rule.GameRule
 import art.vilolon.backgammon.game.rule.NEW_GAME_P2AI
 import art.vilolon.backgammon.game.rule.P1
-import art.vilolon.backgammon.game.rule.P_CHECKERS_COUNT
 import art.vilolon.backgammon.game.utils.LOGGER_FACTORY
 import art.vilolon.backgammon.game.utils.Logger
 import art.vilolon.backgammon.ml.EncodableGame
@@ -24,17 +23,13 @@ import art.vilolon.backgammon.ml.NetworkUtil.RAM_SIZE
 import art.vilolon.backgammon.ml.domain.BoardGym
 import art.vilolon.backgammon.ml.mappers.Mapper
 import org.datavec.api.records.reader.impl.regex.RegexSequenceRecordReader.LOG
-import org.deeplearning4j.core.storage.StatsStorage
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork
-import org.deeplearning4j.optimize.listeners.PerformanceListener
 import org.deeplearning4j.rl4j.learning.IEpochTrainer
 import org.deeplearning4j.rl4j.learning.ILearning
 import org.deeplearning4j.rl4j.learning.async.a3c.discrete.A3CDiscreteDense
 import org.deeplearning4j.rl4j.learning.async.nstep.discrete.AsyncNStepQLearningDiscreteDense
 import org.deeplearning4j.rl4j.learning.listener.TrainingListener
 import org.deeplearning4j.rl4j.space.ActionSpace
-import org.deeplearning4j.rl4j.util.DataManager
-import org.deeplearning4j.rl4j.util.DataManagerTrainingListener
 import org.deeplearning4j.rl4j.util.IDataManager
 import org.nd4j.common.primitives.AtomicDouble
 import org.nd4j.jita.conf.CudaEnvironment
@@ -49,12 +44,13 @@ fun main(args : Array<String>) {
 val maxReward = AtomicDouble(WRONG_MOVE_REWARD)
 
 fun start() {
-    val randomNetworkName = "network-" + System.currentTimeMillis() + ".zip"
+    val networkName = "network-" + System.currentTimeMillis() + ".zip"
     val calendar = Calendar.getInstance()
     val h = calendar.get(Calendar.HOUR_OF_DAY)
     val m = calendar.get(Calendar.MINUTE)
     val s = calendar.get(Calendar.SECOND)
-    println("Start NetworkName:$randomNetworkName pid:${ProcessHandle.current().pid()} $h:$m:$s")
+    println("Start NetworkName:$networkName pid:${ProcessHandle.current().pid()} $h:$m:$s")
+    println("CPU count: ${NetworkUtil.getCpuCount()}")
     val mapper = Mapper()
     val gameRule = GameRule(LOGGER_FACTORY)
 
@@ -160,7 +156,7 @@ public static void main(String[] args) {
     try {
 //        dql.neuralNet.save(randomNetworkName, randomNetworkName)
 //        dql.neuralNet.neuralNetworks[0].
-        println("saved:$randomNetworkName pid:${ProcessHandle.current().pid()}")
+        println("saved:$networkName pid:${ProcessHandle.current().pid()}")
     } catch (e: IOException) {
         LOG.error(e.message, e)
     }

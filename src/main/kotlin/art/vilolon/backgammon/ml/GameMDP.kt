@@ -21,7 +21,8 @@ import org.nd4j.common.primitives.AtomicDouble
 import org.nd4j.linalg.api.ndarray.INDArray
 import kotlin.math.roundToInt
 
-private const val CHECK_REWARD_STEPS_COUNT = 4_500
+private const val ON_EACH_TEN_PERCENT = 10
+private val CHECK_REWARD_STEPS_COUNT = (MAX_STEPS / NetworkUtil.getCpuCount()) / ON_EACH_TEN_PERCENT
 
 class GameMDP(
     private val gameRule: GameRule,
