@@ -17,13 +17,13 @@ data class GGame(
     val availableMoves: GAvailableMoves = NO_AVAILABLE_MOVES,
     val turnPlayer: Int = P2,
     val state: GGameState = GGameState.START,
-): java.io.Serializable
+)
 
 data class GPlayer(
     val checkers: List<GChecker>,
     val tookHead: Boolean = false,
     val allAtHome: Boolean = false,
-): java.io.Serializable
+)
 
 data class GChecker(
     val id: Int,
@@ -31,7 +31,7 @@ data class GChecker(
     val highPosition: Int,
     val canMove: Boolean = true,
     val isSelected: Boolean = false,
-): java.io.Serializable {
+) {
     companion object {
         fun getForPlayer1() = buildList {
             repeat(P_CHECKERS_COUNT) { id ->
@@ -62,7 +62,7 @@ data class GChecker(
 data class GDicesOnBoard(
     val leftBoard: GDices = NO_DICES,
     val rightBoard: GDices = NO_DICES,
-): java.io.Serializable {
+) {
     val values: List<GDice>
         get() = when {
             leftBoard.values.isNotEmpty() -> leftBoard.values
@@ -74,13 +74,13 @@ data class GDicesOnBoard(
 data class GDices(
     val values: List<GDice> = emptyList(),
     val rolling: Boolean = false,
-): java.io.Serializable
+)
 
 data class GDice(
     val value: Int,
     val isUsed: Boolean = false,
     val id: Long = _id++,
-): java.io.Serializable {
+) {
     companion object {
         private var _id = 0L
     }
@@ -88,15 +88,15 @@ data class GDice(
 
 data class GAvailableMoves(
     val holes: Set<GMovePosition> = emptySet(),
-): java.io.Serializable
+)
 
-enum class GGameState: java.io.Serializable {
+enum class GGameState {
     START,
     PLAYING,
     END,
 }
 
-sealed interface GVS: java.io.Serializable {
+sealed interface GVS {
 
     object AI : GVS {
         private fun readResolve(): Any = AI
@@ -113,7 +113,7 @@ data class GMovePosition(
     val checker: GChecker,
     val toPosition: HolePosition,
     val dices: List<GDice>,
-): java.io.Serializable
+)
 
 typealias HolePosition = Int
 
