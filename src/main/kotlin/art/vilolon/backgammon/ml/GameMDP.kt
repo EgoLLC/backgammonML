@@ -1,5 +1,6 @@
 package art.vilolon.backgammon.ml
 
+import art.vilolon.backgammon.game.entity.GChecker
 import art.vilolon.backgammon.game.entity.HolePosition
 import art.vilolon.backgammon.game.rule.GameRule
 import art.vilolon.backgammon.game.rule.P2
@@ -35,8 +36,9 @@ class GameMDP(
     // Size is 360
     private val actionSpace = DiscreteSpace(NetworkUtil.NUMBER_OF_OUTPUTS)
     private var lastProgress: GameProgress = GameProgress(0f, 0f)
-    private var bufferReward = 0.0
-    private var moveCountCut = 0
+    private var rewardBuffer = 0.0
+    private var stepCount = 0L
+    private var moveCount = 0L
     private var startTime: Long = System.currentTimeMillis()
     private var gameCache: Pair<Int, INDArray>? = null
     private val gameVisualisation by lazy { GameVisualisation }
@@ -57,7 +59,8 @@ class GameMDP(
     override fun close() {
         val sec = (System.currentTimeMillis() - startTime) / 1000
         println(
-            "Close: $moveCount moves " +
+            "Close stepCount: $stepCount " +
+            "Max Reward : $maxReward " +
                     "[${((sec / 60 / 60) % 60).toString().padStart(2, '0')}:" +
                     "${((sec / 60) % 60).toString().padStart(2, '0')}:" +
                     "${(sec % 60).toString().padStart(2, '0')}]"
@@ -68,6 +71,9 @@ class GameMDP(
 //        println("Environment step pid:${ProcessHandle.current().pid()}")
         // Find action based on action index
         val (checkerId, toPosition) = mapper.toOutput(actionIndex)
+        val moveChecker = gym.gameState.player1.checkers.filter { checker ->
+            gym.gameState.player1.checkers[checkerId].position == checker.position
+        }.maxBy { checker -> checker.highPosition } // top checker
 //        println("Environment Index:$actionIndex checkerId:$checkerId to$toPosition")
 //        check(checkerId in 0..14 && toPosition in 1..24)
 //        check(gym.getTurnPlayer() == P1)
@@ -77,24 +83,41 @@ class GameMDP(
         var isP1Win: Int? = null
 
         // Get reward
-        val rewardValue = calculateRewardForAction(checkerId, toPosition)
+        val rewardValue = calculateRewardForAction(moveChecker, toPosition)
 
         // Move
-        if (rewardValue == WRONG_MOVE_REWARD) {
-            val p1Move = gym.p1Move() //AI2P1 do move
+        when (rewardValue) {
+            ALLOWED_MOVE_REWARD -> {
+                val p1Move = gym.p1Move(moveChecker, toPosition)
+                moveCount++
+//                println("Environment ALLOWED_MOVE_REWARD:$p1Move | checker:${checkerId} to:$toPosition")
+            }
+
+            WRONG_MOVE_REWARD -> {
+//                gym.  p1.getSelectChecker(gameState)
+//                println("Environment WRONG_MOVE_REWARD checker:${checkerId} to:$toPosition")
+            }
+
+            null -> { // no move for player
+//                println("Environment NO_MOVE:\${p1Move}")
+                gym.noMoveNextMove(P2)
+            }
+        }
+//        if (rewardValue == WRONG_MOVE_REWARD) {
+//            val p1Move = gym.p1Move() //AI2P1 do move
 //                p1Move?.winner?.let {
 //                        println("P1 Win $p1Move $lastProgress")
 //                }
 //                isP1Win = p1Move?.winner
 //                println("Environment p1Move:$p1Move")
-        } else {
-            val p1Move = gym.p1Move(checkerId, toPosition)
+//        } else {
+//            val p1Move = gym.p1Move(moveChecker, toPosition)
 //                p1Move?.winner?.let {
 //                        println("P1 Win $p1Move $lastProgress")
 //                }
 //                isP1Win = p1Move?.winner //NN do move
 //                println("Environment NN p1Move:$p1Move")
-        }
+//        }
 
 
         if (gym.getTurnPlayer() == P2) {
@@ -116,13 +139,15 @@ class GameMDP(
 //        check(gym.getTurnPlayer() == P1)
 //        encodableGame.game = gym.gameState
 
-        val reward = when {
-//            isDone -> 0.1
-            true == true -> rewardValue
-            isP1Win != null -> P1_WIN_REWARD
-            isP2Win != null -> rewardValue
-            else -> rewardValue
-        }
+        val reward = rewardValue ?: /*no moves*/ 0.0
+
+//            when {
+////            isDone -> 0.1
+//            true == true -> rewardValue
+//            isP1Win != null -> P1_WIN_REWARD
+//            isP2Win != null -> rewardValue
+//            else -> rewardValue
+//        }
 
 //        println("Environment reward:$reward")
 
@@ -132,12 +157,12 @@ class GameMDP(
             isDone,
             "BackgammonDl4j"
         ).also {
-            bufferReward += reward
-            moveCountCut++
+            rewardBuffer += reward
+            stepCount++
 //            gameVisualisation.render(gym.gameState)
-            if (moveCountCut == CHECK_REWARD_STEPS_COUNT) {
-                moveCount += CHECK_REWARD_STEPS_COUNT
-                val avrReward = bufferReward / CHECK_REWARD_STEPS_COUNT
+            if (stepCount % CHECK_REWARD_STEPS_COUNT == 0L) {
+//                moveCount += CHECK_REWARD_STEPS_COUNT
+                val avrReward = rewardBuffer / CHECK_REWARD_STEPS_COUNT
 //                println("Avr reward:${avrReward.toString().take(7)} m:${moveCount}")
                 if (maxReward.get() < avrReward) {
                     maxReward.set(avrReward)
@@ -146,27 +171,24 @@ class GameMDP(
                     val m = ((sec / 60) % 60).toString().padStart(2, '0')
                     val s = (sec % 60).toString().padStart(2, '0')
                     println(
-                        "Max reward:${maxReward.get().toString().take(7)} " +
+                        "Avr reward:${avrReward.toString().take(7)} " +
                                 "[$h:$m:$s]"
-                                + " [${((moveCount.toFloat() / MAX_STEPS) * 100).roundToInt()}%]"
+                                + " moves:${((moveCount.toFloat() / stepCount) * 100).roundToInt()}%"
+                                + " [${((stepCount.toFloat() / (MAX_STEPS / NetworkUtil.getCpuCount())) * 100).roundToInt()}%]"
                     )
                 }
-                moveCountCut = 0
-                bufferReward = 0.0
+                rewardBuffer = 0.0
             }
         }
     }
 
-    private fun calculateRewardForAction(checkerId: Int, toPosition: HolePosition): Double {
+    private fun calculateRewardForAction(checker: GChecker, toPosition: HolePosition): Double? {
 //        println("calculateRewardForAction checkerId:${checkerId} toPosition:$toPosition")
-        val p1AvailableMoves = gym.getP1AvailableMoves()
-        val movesToPosition = p1AvailableMoves.filter { move ->
-            move.holes.any { it.toPosition == toPosition }
-        }
-        val hasMove = movesToPosition.any { moves ->
-            moves.holes.any {
-                it.checker.position == gym.gameState.player1.checkers[checkerId].position
-            }
+        val p1AvailableMoves = gym.getP1AvailableMoves() //todo getAvailableMoves (getP1AvailableMoves) call twice -> do one
+        if (p1AvailableMoves.isEmpty()) return null
+
+        val hasMove = p1AvailableMoves.any { move ->
+            move.holes.any { it.toPosition == toPosition && it.checker.position == checker.position }
         }
 
 //        println("calculateRewardForAction hasMove:$hasMove \n" +
@@ -174,12 +196,12 @@ class GameMDP(
 //                "checkerId:$checkerId \n" +
 //                "toPosition:$toPosition \n" )
 //                "AvailableMoves: ${p1AvailableMoves.joinToString { "\n$it" }} ")
-        if (!hasMove) {
+        if (hasMove) {
 //            println("WRONG_MOVE")
-            return WRONG_MOVE_REWARD
+            return ALLOWED_MOVE_REWARD
         } else {
 //            println("ALLOWED_MOVE_REWARD")
-            return ALLOWED_MOVE_REWARD
+            return WRONG_MOVE_REWARD
         }
 
         val (p1Progress, p2Progress) = lastProgress
@@ -207,6 +229,6 @@ class GameMDP(
         private const val ALLOWED_MOVE_REWARD = HIGH_VALUE
         private const val P1_WIN_REWARD = 1000.0
         private const val P2_WIN_REWARD = 10.0
-        private var moveCount = 0
+//        private var moveCount = 0
     }
 }

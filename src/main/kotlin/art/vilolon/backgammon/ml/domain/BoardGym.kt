@@ -2,6 +2,7 @@ package art.vilolon.backgammon.ml.domain
 
 import art.vilolon.backgammon.ai.AI
 import art.vilolon.backgammon.game.entity.GAvailableMoves
+import art.vilolon.backgammon.game.entity.GChecker
 import art.vilolon.backgammon.game.entity.GDice
 import art.vilolon.backgammon.game.entity.GDices
 import art.vilolon.backgammon.game.entity.GDicesOnBoard
@@ -230,25 +231,12 @@ class BoardGym(
     }
 
     @Throws(WrongMove::class)
-    suspend fun p1Move(checkerId: Int? = null, toPosition: HolePosition? = null): Output? {
+    suspend fun p1Move(checker: GChecker, toPosition: HolePosition): Output? {
 //        println("p1Move ${getProgress()}")
 //        val line1 = ("p1Move checkerId:${checkerId}, toPosition:$toPosition\n")
 //        check(gameState.turnPlayer == P1 && gameState.state == GGameState.PLAYING)
 
-        val moveCheckerPosition = checkerId?.let { gameState.player1.checkers.find { it.id == checkerId }?.position }
-
-        val topChecker = moveCheckerPosition?.let {
-            gameState.player1.checkers.maxByOrNull { checker ->
-                moveCheckerPosition == checker.position
-            }
-        }
 //        val line2 = ("p1Move topChecker:${topChecker}\n")
-
-        val checker = topChecker ?: p1.getSelectChecker(gameState)
-        if (checker == null) {
-            noMoveNextMove(P2)
-            return null
-        }
 
 //        val line3 = ("p1Move select checker:${checker}\n")
 
@@ -263,26 +251,18 @@ class BoardGym(
 
 //        val line4 = ("p1Move availableMoves for checker:${gameState.availableMoves.holes.joinToString { "\n$it" }}")
 
-        val moveTo = toPosition ?: p1.getMovePosition(gameState)
-        if (moveTo == null) {
-            noMoveNextMove(P2)
-            return null
-        }
-
-        val move = availableMoves.holes.find {
-            it.toPosition == moveTo && it.checker.position == checker.position // Get any checker on hole
+        val move = availableMoves.holes.first {
+            it.toPosition == toPosition && it.checker.position == checker.position // Get any checker on hole
         }
 //        check(move != null) {
 //            val allAvailableMoves = availableMoves.holes.joinToString()
 //            line1 + line2 + line3 + line4 + allAvailableMoves
 //        }
 
-        if (toPosition != null && topChecker != null && toPosition != null && move != null) {
-            modelDoMoveCount++
-        }
+        modelDoMoveCount++
 
         val updatedDice = gameState.dices.leftBoard.values.map { dice ->
-            if (move!!.dices.any { dice.id == it.id }) {
+            if (move.dices.any { dice.id == it.id }) {
                 dice.copy(isUsed = true)
             } else {
                 dice
@@ -293,15 +273,15 @@ class BoardGym(
             moveCount++
         }
 
-        val tookHead = if (isMoveFinish) false else gameState.player1.tookHead || move!!.checker.position == P1_HEAD
+        val tookHead = if (isMoveFinish) false else gameState.player1.tookHead || move.checker.position == P1_HEAD
         val updateP1 = gameState.player1.copy(
             checkers = gameState.player1.checkers.map { p1Checker ->
-                if (move!!.checker == p1Checker) p1Checker.copy(position = move.toPosition) else p1Checker
+                if (checker == p1Checker) p1Checker.copy(position = move.toPosition) else p1Checker
             },
             tookHead = tookHead,
             allAtHome = gameState.player1.allAtHome || (
                     (gameState.player1.checkers.count { it.position in P1_HOME_POSITIONS } == P_CHECKERS_COUNT - 1)
-                            && (move!!.checker.position !in P1_HOME_POSITIONS && move.toPosition in P1_HOME_POSITIONS)
+                            && (move.checker.position !in P1_HOME_POSITIONS && move.toPosition in P1_HOME_POSITIONS)
                     )
         )
 
@@ -335,7 +315,7 @@ class BoardGym(
 
         return Output(
             checkerId = checker.id,
-            to = moveTo,
+            to = toPosition,
             winner = if (isGameOver) P1 else null,
             moves = moveCountOutput,
             modelDoMoves = modelDoMoveCountOutput,
@@ -357,7 +337,7 @@ class BoardGym(
         return newDices
     }
 
-    private fun noMoveNextMove(nextPlayer: Int) {
+    fun noMoveNextMove(nextPlayer: Int) {
         gameState = gameState.copy(
             turnPlayer = nextPlayer,
             player1 = gameState.player1.copy(tookHead = false),
