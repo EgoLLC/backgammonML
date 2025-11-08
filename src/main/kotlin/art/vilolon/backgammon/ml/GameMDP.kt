@@ -2,6 +2,7 @@ package art.vilolon.backgammon.ml
 
 import art.vilolon.backgammon.game.entity.GChecker
 import art.vilolon.backgammon.game.entity.HolePosition
+import art.vilolon.backgammon.game.rule.BOARD_HOLE_COUNT
 import art.vilolon.backgammon.game.rule.GameRule
 import art.vilolon.backgammon.game.rule.P2
 import art.vilolon.backgammon.game.utils.GameProgress
@@ -20,10 +21,10 @@ import org.deeplearning4j.rl4j.space.DiscreteSpace
 import org.deeplearning4j.rl4j.space.ObservationSpace
 import org.nd4j.common.primitives.AtomicDouble
 import org.nd4j.linalg.api.ndarray.INDArray
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 private const val ON_EACH_TEN_PERCENT = 10
-private val CHECK_REWARD_STEPS_COUNT = (MAX_STEPS / NetworkUtil.getCpuCount()) / ON_EACH_TEN_PERCENT
 
 class GameMDP(
     private val gameRule: GameRule,
@@ -42,6 +43,7 @@ class GameMDP(
     private var startTime: Long = System.currentTimeMillis()
     private var gameCache: Pair<Int, INDArray>? = null
     private val gameVisualisation by lazy { GameVisualisation }
+    private val checkRewardStepsCount = (MAX_STEPS / NetworkUtil.getCpuCount()) / ON_EACH_TEN_PERCENT
 
     override fun getObservationSpace(): ObservationSpace<EncodableGame> {
         return GameObservationSpace()
@@ -60,7 +62,7 @@ class GameMDP(
         val sec = (System.currentTimeMillis() - startTime) / 1000
         println(
             "Close stepCount: $stepCount " +
-            "Max Reward : $maxReward " +
+                    "Max Reward : $maxReward " +
                     "[${((sec / 60 / 60) % 60).toString().padStart(2, '0')}:" +
                     "${((sec / 60) % 60).toString().padStart(2, '0')}:" +
                     "${(sec % 60).toString().padStart(2, '0')}]"
@@ -160,9 +162,9 @@ class GameMDP(
             rewardBuffer += reward
             stepCount++
 //            gameVisualisation.render(gym.gameState)
-            if (stepCount % CHECK_REWARD_STEPS_COUNT == 0L) {
+            if (stepCount % checkRewardStepsCount == 0L) {
 //                moveCount += CHECK_REWARD_STEPS_COUNT
-                val avrReward = rewardBuffer / CHECK_REWARD_STEPS_COUNT
+                val avrReward = rewardBuffer / checkRewardStepsCount
 //                println("Avr reward:${avrReward.toString().take(7)} m:${moveCount}")
                 if (maxReward.get() < avrReward) {
                     maxReward.set(avrReward)
@@ -200,8 +202,27 @@ class GameMDP(
 //            println("WRONG_MOVE")
             return ALLOWED_MOVE_REWARD
         } else {
+            // get reward by closeness to real move target
+            val closenessDifferenceTarget = p1AvailableMoves.minOf { moves ->
+                moves.holes.minOf { hole ->
+                    abs(hole.toPosition - toPosition)
+                }
+            }
+            val rewardByClosenessToPosition = ((BOARD_HOLE_COUNT - closenessDifferenceTarget).toFloat() / BOARD_HOLE_COUNT) * 0.5
+
+            // get reward by closes to real checkers
+            val closenessDifferenceChecker = p1AvailableMoves.minOf { moves ->
+                moves.holes.minOf { hole ->
+                    abs(hole.checker.position - checker.position)
+                }
+            }
+            val rewardByClosenessChecker = ((BOARD_HOLE_COUNT - closenessDifferenceChecker).toFloat() / BOARD_HOLE_COUNT) * 0.5
+//            println("p1AvailableMoves: ${p1AvailableMoves.map { it1 -> it1.holes.map { it.checker.position } }.joinToString()}")
+//            println("checker: ${checker.position}")
+//            println("closenessDifferenceChecker: ${closenessDifferenceChecker}")
+//            println("rewardByClosenessChecker: ${rewardByClosenessChecker}")
 //            println("ALLOWED_MOVE_REWARD")
-            return WRONG_MOVE_REWARD
+            return ((rewardByClosenessChecker + rewardByClosenessToPosition) * -1)
         }
 
         val (p1Progress, p2Progress) = lastProgress
